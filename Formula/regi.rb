@@ -2,7 +2,7 @@ class Regi < Formula
   desc "Tiny newline-delimited plaintext register CLI"
   homepage "https://github.com/hamb1y/regi"
   url "https://github.com/hamb1y/regi/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "SHA256_FOR_V0_1_0_TARBALL"
+  sha256 "c9da727a03cb3d7d37dcbd5f9508501d70addd77e34b18bf4c7b756200f6a55d"
   head "https://github.com/hamb1y/regi.git", branch: "main"
   license "BSD-3-Clause"
 
