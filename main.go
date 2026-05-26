@@ -86,14 +86,16 @@ func delCommand(args []string) error {
 		printDelHelp()
 		return nil
 	}
+
+	opts, args := delOptions(args)
 	if len(args) == 0 {
-		return errors.New("del requires a regex, or a register and regex")
+		return errors.New("del requires text, or a register and text")
 	}
 
 	register, pattern := registerAndText(args)
-	re, err := regexp.Compile(pattern)
+	matches, err := matcher(pattern, opts.regex)
 	if err != nil {
-		return fmt.Errorf("invalid regex: %w", err)
+		return err
 	}
 
 	path, err := registerPath(register)
@@ -109,13 +111,19 @@ func delCommand(args []string) error {
 	kept := items[:0]
 	removed := 0
 	for _, item := range items {
-		if re.MatchString(item) {
+		if matches(item) {
+			if opts.dryRun {
+				fmt.Println(item)
+			}
 			removed++
 			continue
 		}
 		kept = append(kept, item)
 	}
 
+	if opts.dryRun {
+		return nil
+	}
 	return writeItems(path, kept, removed > 0)
 }
 
@@ -202,6 +210,39 @@ func registerAndText(args []string) (string, string) {
 	return args[0], strings.Join(args[1:], " ")
 }
 
+type delOpts struct {
+	dryRun bool
+	regex  bool
+}
+
+func delOptions(args []string) (delOpts, []string) {
+	var opts delOpts
+	for len(args) > 0 {
+		switch args[0] {
+		case "-d", "--dry-run":
+			opts.dryRun = true
+		case "-r", "--regex":
+			opts.regex = true
+		default:
+			return opts, args
+		}
+		args = args[1:]
+	}
+	return opts, args
+}
+
+func matcher(pattern string, regex bool) (func(string) bool, error) {
+	if !regex {
+		return func(item string) bool { return item == pattern }, nil
+	}
+
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("invalid regex: %w", err)
+	}
+	return re.MatchString, nil
+}
+
 func wantsHelp(args []string) bool {
 	return len(args) == 1 && (args[0] == "-h" || args[0] == "--help" || args[0] == "help")
 }
@@ -212,7 +253,7 @@ func printGeneralHelp() {
 Usage:
   regi [register]
   regi add [register] <text>
-  regi del [register] <regex>
+  regi del [-d] [-r] [register] <text>
   regi help
   regi <subcommand> -h
 
@@ -221,7 +262,8 @@ Examples:
   regi work
   regi add "buy milk"
   regi add work call Sam
-  regi del work "^done:"
+  regi del milk
+  regi del -r work "^done:"
 
 `, appName)
 }
@@ -236,8 +278,9 @@ Adds one plaintext line to a register. With no register, uses default.regi.`)
 
 func printDelHelp() {
 	fmt.Println(`Usage:
-  regi del <regex>
-  regi del <register> <regex>
+  regi del [-d] [-r] <text>
+  regi del [-d] [-r] <register> <text>
 
-Removes lines matching the Go regular expression. With no register, uses default.regi.`)
+Removes exact matching lines. With -r, removes lines matching the Go regular expression.
+With -d, prints matching lines without deleting them. With no register, uses default.regi.`)
 }
