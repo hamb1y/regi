@@ -37,10 +37,10 @@ func run(args []string) error {
 	case "del", "delete", "rm", "remove":
 		return delCommand(args[1:])
 	default:
-		if len(args) > 1 {
-			return fmt.Errorf("unknown command or too many arguments: %s", strings.Join(args, " "))
+		if len(args) == 1 {
+			return listRegister(args[0])
 		}
-		return listRegister(args[0])
+		return addCommand(args)
 	}
 }
 
@@ -252,6 +252,7 @@ func printGeneralHelp() {
 
 Usage:
   regi [register]
+  regi <register> <text>
   regi add [register] <text>
   regi del [-d] [-r] [register] <text>
   regi help
@@ -260,6 +261,7 @@ Usage:
 Examples:
   regi
   regi work
+  regi work "buy milk"
   regi add "buy milk"
   regi add work call Sam
   regi del milk

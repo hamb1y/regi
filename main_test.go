@@ -9,6 +9,20 @@ import (
 	"testing"
 )
 
+func TestRegisterTextAddsToNamedRegister(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	if err := run([]string{"work", "bot", "token", "redacted"}); err != nil {
+		t.Fatal(err)
+	}
+
+	got := readRegisterFile(t, home, "work")
+	if got != "bot token redacted\n" {
+		t.Fatalf("register = %q, want %q", got, "bot token redacted\n")
+	}
+}
+
 func TestDelExactMatch(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)

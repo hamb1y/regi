@@ -35,6 +35,7 @@ BINDIR="$HOME/bin" sh install.sh
 ```sh
 regi
 regi work
+regi work "buy milk"
 regi add "buy milk"
 regi add work call Sam
 regi del milk
