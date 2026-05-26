@@ -21,6 +21,7 @@ go build -trimpath -ldflags="-s -w" -o "$tmpdir/regi" .
 install -m 755 "$tmpdir/regi" "$bindir/regi"
 
 echo "installed regi to $bindir/regi"
+echo "homebrew install: brew tap hamb1y/tap && brew install regi"
 
 case ":$PATH:" in
 	*:"$bindir":*) ;;
